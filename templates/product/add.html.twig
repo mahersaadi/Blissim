@@ -1,0 +1,14 @@
+{% extends "base.html.twig" %}
+{% block title %}
+	Nouveau produit
+{% endblock %}
+{% block body %}
+	<h4 style="margin:30px">Nouveau produit</h4>
+	{{form_start(form)}}
+	{{form_errors(form)}}
+	{{form_widget(form)}}
+	<button class="submit btn btn-primary" style="margin-top:30px">
+		<i class="fas fas-save"></i>
+		Créer le produit</button>
+	{{form_end(form)}}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html.twig" %}
+{% block title %}
+	Modifier catégorie
+{% endblock %}
+{% block body %}
+	<h4 style="margin:30px">Modifier catégorie:
+		{{ category.name }}</h4>
+	{{form_start(form)}}
+	{{form_errors(form)}}
+	{{form_widget(form)}}
+	<button class="submit btn btn-primary" style="margin-top:30px">
+		<i class="fas fas-save"></i>
+		Modifier la catégorie</button>
+	{{form_end(form)}}
+{% endblock %}
