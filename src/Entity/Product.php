@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
 
 /**
  * @ORM\Entity(repositoryClass=ProductRepository::class)
@@ -24,11 +26,15 @@ class Product
 
     /**
      * @ORM\Column(type="integer")
+     * @Assert\NotBlank(message = "Le nom de produit ne doit pas être vide")
+     * @Assert\Lenght(min => 3, max => 255, minMessage => "Le nom de produit doit avoir minimum 3 caractères")
      */
     private $price;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message="Le produit ne doit pas être vide")
+     * @Assert\Lenght(min=1,max=999999,minMesssage="prix ne doit pas être inférieur à 1",maxMessage="prix ne doit pas être supérieur à 999999")
      */
     private $slug;
 
@@ -39,11 +45,13 @@ class Product
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\Url(message="Le lien de la photo doit être valide")
      */
     private $picture;
 
     /**
      * @ORM\Column(type="text")
+     * @Assert\NotBlank(message="La description est obligatoire")
      */
     private $shortDesc;
 
