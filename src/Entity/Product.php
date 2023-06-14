@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ProductRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
@@ -21,25 +23,26 @@ class Product
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\Length(min = 3,max = 255, minMessage = "Le nom  est inférieur à 3 caractéres ",maxMessage = "Le nom dépasse 255 caractéres")
+     *
      */
     private $name;
 
     /**
      * @ORM\Column(type="integer")
-     * @Assert\NotBlank(message = "Le nom de produit ne doit pas être vide")
-     * @Assert\Lenght(min => 3, max => 255, minMessage => "Le nom de produit doit avoir minimum 3 caractères")
+     * @Assert\NotBlank(message="Le produit ne doit pas être vide")
+     * @Assert\Length(min = 1,max = 99, minMessage = "Le prix est inférieur à 1 ",maxMessage = "Le prix ne dépasse pas  99999")
      */
     private $price;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="Le produit ne doit pas être vide")
-     * @Assert\Lenght(min=1,max=999999,minMesssage="prix ne doit pas être inférieur à 1",maxMessage="prix ne doit pas être supérieur à 999999")
      */
     private $slug;
 
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="products")
+     * @Assert\NotBlank(message="La catégorie est obligatoire")
      */
     private $category;
 
@@ -52,8 +55,19 @@ class Product
     /**
      * @ORM\Column(type="text")
      * @Assert\NotBlank(message="La description est obligatoire")
+     * @Assert\Length(min = 3,max = 255, minMessage = "La description  est inférieur à 3 caractéres ",maxMessage = "La description dépasse 255 caractéres")
      */
     private $shortDesc;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Comments::class, mappedBy="product")
+     */
+    private $comments;
+
+    public function __construct()
+    {
+        $this->comments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -128,6 +142,36 @@ class Product
     public function setShortDesc(string $shortDesc): self
     {
         $this->shortDesc = $shortDesc;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comments>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comments $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments[] = $comment;
+            $comment->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comments $comment): self
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getProduct() === $this) {
+                $comment->setProduct(null);
+            }
+        }
 
         return $this;
     }

@@ -3,9 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Category;
+use App\Entity\Comments;
 use App\Entity\Product;
+use App\Form\CommentType;
 use App\Form\ProductType;
 use App\Repository\CategoryRepository;
+use App\Repository\CommentsRepository;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +29,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ProductController extends AbstractController
 {
@@ -48,30 +52,45 @@ class ProductController extends AbstractController
     /**
      * @Route("/{category_slug}/{slug}",name="product_show")
      */
-    public function show($slug, ProductRepository $productRepository)
+    public function show(Request $request, $slug, ProductRepository $productRepository, CommentsRepository $commentsRepository, EntityManagerInterface $em)
     {
         $product = $productRepository->findOneBy([
             'slug' => $slug
         ]);
+        $aComments = $commentsRepository->findby(['product' => $product]);
+        $comment = new Comments();
+        $formComment = $this->createForm(CommentType::class, $comment);
+        $formComment->handleRequest($request);
+        if ($formComment->isSubmitted() && $formComment->isValid()) {
+            // var_dump($this->getUser());
+            $comment->setProduct($product)
+                ->setCreatedAt(new \DateTime())
+                ->setUser($this->getUser());
+            $em->persist($comment);
+            $em->flush();
+        }
+
 
         if (!$product) {
             throw new NotFoundHttpException("Le produit n'existe pas!");
         }
+        $formView = $formComment->createView();
 
         return $this->render('product/show.html.twig', [
-            'product' => $product
+            'product' => $product, 'formComment' => $formView, 'aComments' => $aComments
         ]);
     }
 
     /**
      * @Route("/admin/product/add",name="product_add")
      */
-    public function add(Request $request, SluggerInterface $sluggerInterface, EntityManagerInterface $em)
+    public function add(Request $request, SluggerInterface $sluggerInterface, EntityManagerInterface $em, ValidatorInterface $validator)
     {
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
+
         $form->handleRequest($request);
-        if ($form->isSubmitted()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $product->setSlug(strtolower($sluggerInterface->slug($product->getName())));
             $em->persist($product);
             $em->flush();
@@ -87,13 +106,13 @@ class ProductController extends AbstractController
     /**
      * @Route("/admin/product/edit/{id}",name="product_edit")
      */
-    public function edit(Request $request, $id, ProductRepository $productRepository, EntityManagerInterface $em)
+    public function edit(Request $request, $id, ProductRepository $productRepository, EntityManagerInterface $em, ValidatorInterface $validator)
     {
         $product = $productRepository->find($id);
         $form = $this->createForm(ProductType::class);
         $form->setData($product);
         $form->handleRequest($request);
-        if ($form->isSubmitted()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
 
             return $this->redirectToRoute('product_show', [

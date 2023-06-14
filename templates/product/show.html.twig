@@ -27,8 +27,43 @@
 				<strong>{{product.category.name}}</strong>
 			</span>
 			<p>{{product.shortDesc}}</p>
+			<hr>
+			<br>
+			<div class="col-12">
 
-			<a href="#" class="btn btn-primary btn-sm">Commenter</a>
+				{{form_start(formComment)}}
+				{{form_errors(formComment)}}
+				{{form_widget(formComment)}}
+				<button class="submit btn btn-primary" style="margin-top:30px">
+					<i class="fas fas-save"></i>
+					Commenter</button>
+				{{form_end(formComment)}}
+			</div>
+
+			<hr>
+			<div class="row">
+				{% for comment in aComments %}
+
+					<small>Commentaire Publié le:
+						{{comment.createdAt |date('d-m-Y')}}
+						par
+						{{comment.user.fullName}}
+					</small>
+				{% endfor %}
+			</div>
+
+			<p>introd</p>
+			<hr>
+
+			<h4>4 commentaires :
+			</h4>
+			<h4>Commentaire de xxxx</h4>
+			<small>Le date</small>
+			<blockquote>
+				<em>le contenu</em>
+			</blockquote>
+			<a href="delete" onclick="return window.confirm(`Êtes vous sûr de vouloir supprimer ce commentaire ?!`)">Supprimer</a>
+
 			<a href="#" class="btn btn-success btn-sm">Ajouter</a>
 		</div>
 	</div>

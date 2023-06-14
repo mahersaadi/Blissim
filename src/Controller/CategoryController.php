@@ -12,18 +12,30 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CategoryController extends AbstractController
 {
+    protected $categoryRepository;
+    public function __construct(CategoryRepository $categoryRepository)
+    {
+        $this->categoryRepository = $categoryRepository;
+    }
+    public function displayCategoryInNavbar()
+    {
+        $categories = $this->categoryRepository->findAll();
+        return $this->render('category/menu_navbar.html.twig', ['categories' => $categories]);
+    }
+
     /**
      * @Route("admin/category/add", name="category_add")
      */
-    public function add(Request $request, SluggerInterface $sluggerInterface, EntityManagerInterface $em)
+    public function add(Request $request, SluggerInterface $sluggerInterface, EntityManagerInterface $em, ValidatorInterface $validator)
     {
         $category = new Category();
         $form = $this->createForm(CategoryType::class);
         $form->handleRequest($request);
-        if ($form->isSubmitted()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $category->setSlug($sluggerInterface->slug($category->getName()));
             $em->persist($category);
             $em->flush();
@@ -37,13 +49,13 @@ class CategoryController extends AbstractController
     /**
      * @Route("admin/category/edit/{id}", name="category_edit")
      */
-    public function edit(Request $request, $id, CategoryRepository $categoryRepository, EntityManagerInterface $em, SluggerInterface $sluggerInterface)
+    public function edit(Request $request, $id, CategoryRepository $categoryRepository, EntityManagerInterface $em, SluggerInterface $sluggerInterface, ValidatorInterface $validator)
     {
         $category = $categoryRepository->find($id);
         $form = $this->createForm(CategoryType::class);
         $form->setData($category);
         $form->handleRequest($request);
-        if ($form->isSubmitted()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
 
             return $this->redirectToRoute('product_category', [
