@@ -21,11 +21,7 @@ class CategoryController extends AbstractController
     {
         $this->categoryRepository = $categoryRepository;
     }
-    public function displayCategoryInNavbar()
-    {
-        $categories = $this->categoryRepository->findAll();
-        return $this->render('category/menu_navbar.html.twig', ['categories' => $categories]);
-    }
+
 
     /**
      * @Route("admin/category/add", name="category_add")

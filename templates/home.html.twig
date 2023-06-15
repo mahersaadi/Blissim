@@ -21,9 +21,8 @@
 						<span>
 							<strong>{{product.category.name}}</strong>
 						</span>
-						<p class="card-text">{{product.shortDesc}}</p>
-						<a href="{{ path('product_show',{ 'category_slug':product.category.slug, 'slug':product.slug})}}" class="btn btn-primary btn-sm">Détails</a>
-						<a href="#" class="btn btn-success btn-sm">Ajouter</a>
+						<p style=" overflow: hidden; max-width: 50ch;text-overflow: ellipsis;white-space: pre-wrap;height: 100px;" class="card-text">{{product.shortDesc}}</p>
+						<a href="{{ path('product_show',{ 'category_slug':product.category.slug, 'slug':product.slug})}}" class="btn btn-primary btn-sm" style="margin-left:190px">Détails</a>
 					</card-body>
 				</div>
 			</div>

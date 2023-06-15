@@ -6,6 +6,7 @@ use App\Entity\Comments;
 use App\Entity\Product;
 use App\Form\CommentType;
 use App\Repository\CommentsRepository;
+use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,23 +16,50 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CommentsController extends AbstractController
 {
+
     /**
-     * @Route("/comments", name="app_comments")
+     * @Route("/comment/add/{product_id}",name="comment_add")
      */
-    public function index(): Response
+    public function add(Request $request, $product_id, ProductRepository $productRepository, EntityManagerInterface $em, ValidatorInterface $validator)
     {
-        return $this->render('comments/index.html.twig', [
-            'controller_name' => 'CommentsController',
+        $product = $productRepository->findOneBy([
+            'id' => $product_id
+        ]);
+        $comment = new Comments();
+        $formComment = $this->createForm(CommentType::class, $comment);
+        $formComment->handleRequest($request);
+        if ($formComment->isSubmitted() && $formComment->isValid()) {
+            $comment->setProduct($product)
+                ->setCreatedAt(new \DateTime())
+                ->setUser($this->getUser());
+            $em->persist($comment);
+            $em->flush();
+        }
+
+        return $this->redirectToRoute('product_show', [
+            'category_slug' => $product->getCategory()->getSlug(),
+            'slug' => $product->getSlug()
         ]);
     }
+
     /**
-     * @Route("/product/comment/add",name="comment_add")
+     * @Route("/comment/delete/{comment_id}",name="comment_delete")
      */
-    public function add(Request $request, EntityManagerInterface $em, ValidatorInterface $validator)
+    public function delete($comment_id, CommentsRepository $commentsRepository, EntityManagerInterface $em, ValidatorInterface $validator)
     {
-        $comment = new Comments();
-        $form = $this->createForm(CommentType::class, $comment);
-        $form->handleRequest($request);
-        dd($request);
+
+        $comment = $commentsRepository->findOneBy([
+            'id' => $comment_id
+        ]);
+        $product = $comment->getProduct();
+
+        $em->remove($comment);
+        $em->flush();
+
+
+        return $this->redirectToRoute('product_show', [
+            'category_slug' => $product->getCategory()->getSlug(),
+            'slug' => $product->getSlug()
+        ]);
     }
 }

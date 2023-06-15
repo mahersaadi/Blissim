@@ -54,23 +54,12 @@ class ProductController extends AbstractController
      */
     public function show(Request $request, $slug, ProductRepository $productRepository, CommentsRepository $commentsRepository, EntityManagerInterface $em)
     {
+
         $product = $productRepository->findOneBy([
             'slug' => $slug
         ]);
-        $aComments = $commentsRepository->findby(['product' => $product]);
-        $comment = new Comments();
-        $formComment = $this->createForm(CommentType::class, $comment);
-        $formComment->handleRequest($request);
-        if ($formComment->isSubmitted() && $formComment->isValid()) {
-            // var_dump($this->getUser());
-            $comment->setProduct($product)
-                ->setCreatedAt(new \DateTime())
-                ->setUser($this->getUser());
-            $em->persist($comment);
-            $em->flush();
-        }
-
-
+        $aComments = $commentsRepository->findby(['product' => $product], ['id' => 'DESC']);
+        $formComment = $this->createForm(CommentType::class);
         if (!$product) {
             throw new NotFoundHttpException("Le produit n'existe pas!");
         }

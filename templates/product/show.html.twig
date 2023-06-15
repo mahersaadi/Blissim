@@ -29,42 +29,59 @@
 			<p>{{product.shortDesc}}</p>
 			<hr>
 			<br>
-			<div class="col-12">
+			{% if app.user %}
+				<div class="col-12">
+					{{ form_start(formComment, {'action': path('comment_add', {'product_id': product.id }), 'method': 'POST'}) }}
+					{{form_start(formComment)}}
+					{{form_errors(formComment)}}
+					{{form_widget(formComment)}}
 
-				{{form_start(formComment)}}
-				{{form_errors(formComment)}}
-				{{form_widget(formComment)}}
-				<button class="submit btn btn-primary" style="margin-top:30px">
-					<i class="fas fas-save"></i>
-					Commenter</button>
-				{{form_end(formComment)}}
-			</div>
-
+					<button class="submit btn btn-primary" style="margin-top:30px">
+						<i class="fas fas-save"></i>
+						Commenter</button>
+					{{form_end(formComment)}}
+				</div>
+			{% else %}
+				<h5>
+					Pour écrire un commentaire il faut t'insrire!</h5>
+			{% endif %}
 			<hr>
 			<div class="row">
+				<h5>
+					{% if aComments %}
+						Commentaires :
+						{{aComments|length}}
+					{% else %}
+						Pas de commentaire
+					{% endif %}
+				</h5>
 				{% for comment in aComments %}
 
-					<small>Commentaire Publié le:
-						{{comment.createdAt |date('d-m-Y')}}
-						par
-						{{comment.user.fullName}}
-					</small>
+
+					<div class="row" style="margin-top:3em">
+						<div class="col-9">
+							<blockquote>
+								<em>{{comment.comment}}</em>
+							</blockquote>
+						</div>
+						<div class="col-3" style="text-align: right;">
+							{% if app.user %}
+								{% if  app.user.id == comment.user.id %}
+									<a href='/comment/delete/{{comment.id}}' style="color: red;font-size: 13px;" onclick="return window.confirm(`Êtes vous sûr de vouloir supprimer ce commentaire ?!`)">Supprimer</a>
+								{% endif %}
+							{% endif %}
+						</div>
+					</div>
+					<div class="col-12">
+						<small>Commentaire publié le:
+							{{comment.createdAt |format_datetime(locale='fr')}}
+							par
+							{{comment.user.fullName}}
+
+						</small>
+					</div>
 				{% endfor %}
 			</div>
-
-			<p>introd</p>
-			<hr>
-
-			<h4>4 commentaires :
-			</h4>
-			<h4>Commentaire de xxxx</h4>
-			<small>Le date</small>
-			<blockquote>
-				<em>le contenu</em>
-			</blockquote>
-			<a href="delete" onclick="return window.confirm(`Êtes vous sûr de vouloir supprimer ce commentaire ?!`)">Supprimer</a>
-
-			<a href="#" class="btn btn-success btn-sm">Ajouter</a>
 		</div>
 	</div>
 </div>{% endblock %}
